@@ -1,5 +1,7 @@
 // getter/setters ignored for simplicity
 
+// 
+
 class FileData {
   public success: boolean;
   public data: Array<Array<string>>;
@@ -16,19 +18,24 @@ class ParamIndices {
   public amountIndex: number;
   public descIndex: number;
   public typeIndex: number;
+  public success: boolean
 
   constructor(
     dateIndex: number,
     amountIndex: number,
     descIndex: number,
-    typeIndex: number
+    typeIndex: number,
+    success: boolean
   ) {
     this.dateIndex = dateIndex;
     this.amountIndex = amountIndex;
     this.descIndex = descIndex;
     this.typeIndex = typeIndex;
+    this.success = success
   }
 }
+
+
 
 const errorLogs = new Map()
 
@@ -70,83 +77,109 @@ class InputFile {
         );
       }
     }
-    const parsedData = lines.filter(line => line.trim().length > 0).map((line) => line.split(","));
+    const parsedData = lines.filter(line => line.trim().length > 0).map((line) => line.split(",").map(word => word.trim().toLowerCase()));
     return new FileData(
       true,
       parsedData,
-      `Parse success: ${lines.length} lines`
+      `Parse success: ${parsedData.length} lines`
     );
   }
 
-  async analyseTransactions(
-    trans: Array<Array<string>>,
-    params: ParamIndices
-  ): Promise<Object> {}
 
-  detectParamIndices(trans: Array<Array<string>>) {
+
+  getParamIndices(trans: Array<Array<string>>, analyseContent:boolean=false): ParamIndices {
     const lineLength = trans[0].length;
-    // console.log('wtf', trans)
 
-    
     const assessment = new Map([["date",-1],["amount",-1],["type",-1],["desc",-1]])
+
+    if(!analyseContent) {
+      const params = trans[0]
+      params.forEach((param,index) => {
+        if(["date"].includes(param.trim().toLowerCase())) {
+          assessment.set("date",index)
+        }
+        else if(["amount"].includes(param.trim().toLowerCase())) {
+          assessment.set("amount",index)
+        }
+        else if(["type"].includes(param.trim().toLowerCase())) {
+          assessment.set("type",index)
+        }
+        else if(["description", "desc", "narration"].includes(param.trim().toLowerCase())) {
+          assessment.set("desc",index)
+        }
+      })
+      const hasUnmatchedCol = Array.from(assessment.values()).includes(-1)
+      if(hasUnmatchedCol) {
+        console.error("Unable to detect column contexts, AC:OFF")
+        console.log("ass",assessment, errorLogs)
+        return this.getParamIndices(trans, true) // anyway tries 
+      }
+      // return assessment
+      return new ParamIndices(assessment.get("date"),assessment.get("amount"),assessment.get("desc"),assessment.get("type"),true)
+    }
+
+
+
+    // this part isn't perfect, but attempts to detect cols without depending on row1
     for (let i = 0; i < lineLength; i++) {
-      let matches = new Map([["date",0],["amount",0],["type",0],["desc",0]])
+      const matches = new Map([["date",0],["amount",0],["type",0],["desc",0]])
       let colMatches = 0
       for (let j = 0; j < trans.length; j++) {
         // console.log("i,j::", i, j, trans[j][i]);
         if(/^\d{1,4}[/-]\d{1,2}[-/]\d{1,4}$/.test(trans[j][i].trim())) {
           matches.set("date", matches.get("date")+1)
           colMatches += 1
-          console.log("date:",trans[j][i])
-        }
-        else{
+        
+        if(!/^\d{1,4}[/-]\d{1,2}[-/]\d{1,4}$/.test(trans[j][i].trim())){
           if(colMatches > 3)
-          errorLogs.set(j,`date doesnt match regex`)
-        }
-        if(/^\d+(\.\d+)?$/.test(trans[j][i].trim())) {
+          errorLogs.set(j,`date doesn't match regex`)
+        }}
+        else if(/^\d+(\.\d+)?$/.test(trans[j][i].trim())) {
           matches.set("amount", matches.get("amount")+1)
           colMatches += 1
-          console.log("amt:",trans[j][i])
-        }
-        else {
+        
+        if(!/^\d+(\.\d+)?$/.test(trans[j][i].trim())) {
           if(colMatches > 3)
             errorLogs.set(j,`cant parse amount`)
-        }
-        if(trans[j][i].toLowerCase == "credit" || trans[j][i].toLowerCase == "debit" || trans[j][i].toLowerCase == "expense" || trans[j][i].toLowerCase == "income") {
+        }}
+        else if(["credit","debit"].includes(trans[j][i].trim().toLowerCase())) {
           matches.set("type", matches.get("type")+1)
           colMatches += 1
-          console.log("type:",trans[j][i])
-        }
-        else{
-          if(colMatches > 3) {
+        
+          if(!["credit","debit"].includes(trans[j][i].trim().toLowerCase())) {       
+            if(colMatches > 3) {
             errorLogs.set(j,"unexpected string in type column")
           }
+        }}
+        else{
+          matches.set("desc", matches.get("desc")+1)
+          colMatches += 1  
         }
       }
       // console.log('matches:',matches)
 
       matches.forEach((value,key)=> {
-        console.log("##",i,key,value,trans.length-1,value == trans.length-1, colMatches, assessment)
-        if(value == trans.length-1) assessment.set(key,i)
-        console.log("**",key,value, colMatches,assessment.get(key), assessment.get("amount"), assessment)
+        // console.log("##",i,key,value,trans.length-1,value == trans.length-1, colMatches, assessment)
+        if(value >= trans.length-1) assessment.set(key,i)
+        // console.log("**",key,value, colMatches,assessment.get(key), assessment.get("amount"), assessment)
 
       })
 
     }
     const checkDupeSet = new Set()
     assessment.forEach(value => {
-      if(!checkDupeSet.has(value)) {
+      if(value != -1 && !checkDupeSet.has(value)) {
         checkDupeSet.add(value)
       }
+
       else {
         console.error("Unable to detect column contexts")
         console.log("ass",assessment, errorLogs)
-        return
+        return new ParamIndices(0,0,0,0,false)
       }
-    
-      
     })
-    console.log("ass",assessment, errorLogs)
+    // console.log("ass",assessment, errorLogs)
+    return new ParamIndices(assessment.get("date"),assessment.get("amount"),assessment.get("desc"),assessment.get("type"),true)
   }
 
   private readFileText(): Promise<string> {
@@ -161,4 +194,4 @@ class InputFile {
   }
 }
 
-export { InputFile };
+export { InputFile, ParamIndices };

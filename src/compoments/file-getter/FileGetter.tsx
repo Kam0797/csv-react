@@ -1,7 +1,8 @@
 
 import { useEffect, useState } from 'react'
 import './FileGetter.css'
-import { InputFile } from '../../utils/FileChecker'
+import { InputFile } from '../../utils/FileParser'
+import { FinReport } from '../../utils/FinReport'
 
 export default function FileGetter() {
 
@@ -14,14 +15,23 @@ export default function FileGetter() {
 
     const csvFile = new InputFile(inputFile) // name csvFile better
     const csvData = await csvFile.parseCSV(3)
+    const transactions = csvData.data
     if(!csvData.success) {
-      console.error(csvData.message)
+      return
     }
-    else{
-      console.log(csvData.message)
-      console.log(csvData.data)
-      await csvFile.detectParamIndices(csvData.data)
+    console.log(csvData.message)
+    console.log(csvData.data)
+    const params = csvFile.getParamIndices(transactions)
+    if(!params.success) {
+      return
     }
+
+    const report = new FinReport(transactions, params)
+
+    
+
+
+
   }
 
   return(
