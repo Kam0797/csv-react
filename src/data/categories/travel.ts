@@ -1,3 +1,5 @@
+import { Category } from "../category";
+
 const travelArr = [
   "flight",
   "bus",
@@ -11,6 +13,6 @@ const travelArr = [
   
 ];
 
-const travelWords = new Set(travelArr);
+const travelCat = new Category("travel",travelArr,7);
 
-export {travelWords}
+export {travelCat}

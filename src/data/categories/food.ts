@@ -1,3 +1,5 @@
+import { Category } from "../category";
+
 const foodArr = [
   "pizza",
   "burger",
@@ -23,6 +25,6 @@ const foodArr = [
   "milk"
 ];
 
-const foodWords = new Set(foodArr);
+const foodCat = new Category("food", foodArr, 7);
 
-export { foodWords };
+export { foodCat };

@@ -1,9 +1,18 @@
-
+import { Category } from "../category";
 
 const recArr = [
-  "rent","insurance","premium","subscription","netflix","spotify","youtube","recurring","bank","charges"
-]
+  "rent",
+  "insurance",
+  "premium",
+  "subscription",
+  "netflix",
+  "spotify",
+  "youtube",
+  "recurring",
+  "bank",
+  "charges",
+];
 
-const recurringExpWords = new Set(recArr)
+const recurringCat = new Category("recurring", recArr, 7);
 
-export {recurringExpWords}
+export { recurringCat };

@@ -1,3 +1,5 @@
+import { Category } from "../category";
+
 const healthArr = [
   "gym",
   "hospital",
@@ -10,6 +12,7 @@ const healthArr = [
 
 const healthSupp = ["member", "membership", "fee"];
 
-const healthWords = new Set(healthArr)
+const healthCat = new Category("health", healthArr, 7);
+const health2Cat = new Category("health", healthSupp, 5);
 
-export {healthWords}
+export { healthCat, health2Cat };

@@ -1,3 +1,5 @@
+import { Category } from "../category";
+
 const utilitiesArr = [
   "bill",
   "electricity",
@@ -14,6 +16,6 @@ const utilitiesArr = [
   "parking",
 ];
 
-const utilitiesWords = new Set(utilitiesArr);
+const utilitiesCat = new Category("utilities",utilitiesArr,7);
 
-export { utilitiesWords };
+export { utilitiesCat };

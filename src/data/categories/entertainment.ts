@@ -1,3 +1,5 @@
+import { Category } from "../category";
+
 const enterArr = [
   "movie",
   "park",
@@ -16,7 +18,7 @@ const enterArr = [
 
 const enterSupportArr = ["ticket", "tickets", "amazon", "black", "thunder"];
 
+const entertainmentCat = new Category("entertainment", enterArr, 7);
+const entertainment2Cat = new Category("entertainment", enterSupportArr, 5);
 
-const entertainmentWords = new Set(enterArr)
-
-export {entertainmentWords}
+export { entertainmentCat, entertainment2Cat };

@@ -121,32 +121,40 @@ class InputFile {
 
 
     // this part isn't perfect, but attempts to detect cols without depending on row1
+
+    const dateRegex = /^\d{1,4}[/-]\d{1,2}[-/]\d{1,4}$/
+    const amountRegex = /^\d+(\.\d+)?$/
+
     for (let i = 0; i < lineLength; i++) {
       const matches = new Map([["date",0],["amount",0],["type",0],["desc",0]])
       let colMatches = 0
       for (let j = 0; j < trans.length; j++) {
+        const isDate = dateRegex.test(trans[j][i])
+        const isAmount = amountRegex.test(trans[j][i])
+        const isType = ["credit","debit"].includes(trans[j][i])
+
         // console.log("i,j::", i, j, trans[j][i]);
-        if(/^\d{1,4}[/-]\d{1,2}[-/]\d{1,4}$/.test(trans[j][i].trim())) {
+        if(isDate) {
           matches.set("date", matches.get("date")+1)
           colMatches += 1
         
-        if(!/^\d{1,4}[/-]\d{1,2}[-/]\d{1,4}$/.test(trans[j][i].trim())){
+        if(!isDate){ // you logic fked up!!
           if(colMatches > 3)
           errorLogs.set(j,`date doesn't match regex`)
         }}
-        else if(/^\d+(\.\d+)?$/.test(trans[j][i].trim())) {
+        else if(isAmount) {
           matches.set("amount", matches.get("amount")+1)
           colMatches += 1
         
-        if(!/^\d+(\.\d+)?$/.test(trans[j][i].trim())) {
+        if(!isAmount) {
           if(colMatches > 3)
             errorLogs.set(j,`cant parse amount`)
         }}
-        else if(["credit","debit"].includes(trans[j][i].trim().toLowerCase())) {
+        else if(isType) {
           matches.set("type", matches.get("type")+1)
           colMatches += 1
         
-          if(!["credit","debit"].includes(trans[j][i].trim().toLowerCase())) {       
+          if(!isType) {       
             if(colMatches > 3) {
             errorLogs.set(j,"unexpected string in type column")
           }
@@ -160,7 +168,7 @@ class InputFile {
 
       matches.forEach((value,key)=> {
         // console.log("##",i,key,value,trans.length-1,value == trans.length-1, colMatches, assessment)
-        if(value >= trans.length-1) assessment.set(key,i)
+        if(value >= trans.length-1) assessment.set(key,i) // .length-1 ?
         // console.log("**",key,value, colMatches,assessment.get(key), assessment.get("amount"), assessment)
 
       })
