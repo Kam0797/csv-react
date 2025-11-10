@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import "./Summary.css";
 import { IconArrowLeftDashed } from "@tabler/icons-react";
 
+// @ts-expect-error TODO create response obj, type aliases
 export default function Summary({ report, setReport }) {
   useEffect(() => {
     console.log("WTF", report?.recurrentExps, report);
@@ -28,7 +29,7 @@ export default function Summary({ report, setReport }) {
         </div>
         <div className="summary-cats">
           <div className="summary-header-2">Expense Categories</div>
-          {report?.expenseCats.map(([cat, value]) => {
+          {report?.expenseCats.map(([cat, value]:[string, number]) => {
             const newCat = cat.slice(0, 1).toUpperCase() + cat.slice(1);
             return (
               <div className="normal">
@@ -38,15 +39,17 @@ export default function Summary({ report, setReport }) {
           })}
           <div className="cats-chart">
             {
+              // @ts-expect-error TODO create response obj, type aliases
               report?.expenseCats.map(([cat, value],index)=> {
-                return <div className="chart-item" style={{width: `${report.expense * value / 100}%`}} />
+                return <div key={index} className="chart-item" style={{width: `${report.expense * value / 100}%`}} />
               })
             }
           </div>
         </div>
         <div className="summary-recur">
           <span className="summary-header-2">Recurring Expenses</span>
-          {report?.recurrentExps.map(([exp, value]) => {
+          // @ts-expect-error TODO create response obj, type aliases
+          {report?.recurrentExps.map(([exp, value]:[string, number]) => {
             const newExp = exp.slice(0, 1).toUpperCase() + exp.slice(1);
             return (
               <div className="normal">

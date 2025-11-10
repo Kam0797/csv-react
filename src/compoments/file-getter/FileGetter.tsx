@@ -1,10 +1,9 @@
 
-import { useEffect, useState } from 'react'
 import './FileGetter.css'
 import { InputFile } from '../../utils/FileParser'
 import { FinReport } from '../../utils/FinReport'
 
-export default function FileGetter({setReport}) {
+export default function FileGetter({setReport}:any) {
 
   // const [file, setFile] = useState<File | null>(null)
 
