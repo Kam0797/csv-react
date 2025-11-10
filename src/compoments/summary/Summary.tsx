@@ -39,8 +39,7 @@ export default function Summary({ report, setReport }) {
           })}
           <div className="cats-chart">
             {
-              // @ts-expect-error TODO create response obj, type aliases
-              report?.expenseCats.map(([cat, value],index)=> {
+              report?.expenseCats.map(([, value]:[string, number],index:number)=> {
                 return <div key={index} className="chart-item" style={{width: `${report.expense * value / 100}%`}} />
               })
             }
@@ -48,7 +47,6 @@ export default function Summary({ report, setReport }) {
         </div>
         <div className="summary-recur">
           <span className="summary-header-2">Recurring Expenses</span>
-          // @ts-expect-error TODO create response obj, type aliases
           {report?.recurrentExps.map(([exp, value]:[string, number]) => {
             const newExp = exp.slice(0, 1).toUpperCase() + exp.slice(1);
             return (
